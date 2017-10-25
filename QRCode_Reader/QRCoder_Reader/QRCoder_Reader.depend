@@ -1,0 +1,6 @@
+# depslib dependency file v1.0
+1508944112 source:/home/william/AMPLabTourRover/QRCode_Reader/QRCoder_Reader/main.cpp
+	<opencv2/opencv.hpp>
+	<iostream>
+	<cmath>
+
