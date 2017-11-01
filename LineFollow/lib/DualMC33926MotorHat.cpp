@@ -2,7 +2,7 @@
 
 // Constructors ////////////////////////////////////////////////////////////////
 
-DualMC33926MotorShield::DualMC33926MotorShield()
+DualMC33926MotorHat::DualMC33926MotorHat()
 {
   //Pin map
   _M1E = 22;
@@ -12,22 +12,22 @@ DualMC33926MotorShield::DualMC33926MotorShield()
 
 }
 
-DualMC33926MotorShield::DualMC33926MotorShield(unsigned char M1DIR, unsigned char M1PWM, 
-                                               unsigned char M2DIR, unsigned char M2PWM, 
-                                               unsigned char M2E, unsigned char M2E)
+DualMC33926MotorHat::DualMC33926MotorHat(unsigned char M1DIRB, unsigned char M1PWMB, 
+                                               unsigned char M2DIRB, unsigned char M2PWMB, 
+                                               unsigned char M1EB, unsigned char M2EB)
 {
   //Pin map
   
 
-  _M1DIR = M1DIR;
-  _M2DIR = M2DIR;
+  _M1DIR = M1DIRB;
+  _M2DIR = M2DIRB;
 
-  _M1E = M1E; 
-  _M2E = M2E;
+  _M1E = M1EB; 
+  _M2E = M2EB;
 }
 
 // Public Methods //////////////////////////////////////////////////////////////
-void DualMC33926MotorShield::init()
+void DualMC33926MotorHat::init()
 {
 // Define pinMode for the pins and set the frequency for timer1.
 
@@ -44,9 +44,10 @@ void DualMC33926MotorShield::init()
  
 }
 // Set speed for motor 1, speed is a number betwenn -400 and 400
-void DualMC33926MotorShield::setM1Speed(int speed)
+void DualMC33926MotorHat::setM1Speed(int speed)
 {
   unsigned char reverse = 0;
+ gpioWrite(_M1E,1);
   
   if (speed < 0)
   {
@@ -65,9 +66,10 @@ void DualMC33926MotorShield::setM1Speed(int speed)
 }
 
 // Set speed for motor 2, speed is a number betwenn -400 and 400
-void DualMC33926MotorShield::setM2Speed(int speed)
+void DualMC33926MotorHat::setM2Speed(int speed)
 {
   unsigned char reverse = 0;
+gpioWrite(_M2E,1);
   
   if (speed < 0)
   {
@@ -86,7 +88,7 @@ void DualMC33926MotorShield::setM2Speed(int speed)
 }
 
 // Set speed for motor 1 and 2
-void DualMC33926MotorShield::setSpeeds(int m1Speed, int m2Speed)
+void DualMC33926MotorHat::setSpeeds(int m1Speed, int m2Speed)
 {
   setM1Speed(m1Speed);
   setM2Speed(m2Speed);

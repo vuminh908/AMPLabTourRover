@@ -1,11 +1,10 @@
-#include "DualMC33926MotorHat.h"
+#include "../lib/DualMC33926MotorHat.h"
 
-DualMC33926MotorShield md;
-
-
+DualMC33926MotorHat md;
 
 
-#include <stdio.h>
+
+
 int main()
 {if (gpioInitialise() < 0)
 {
@@ -18,37 +17,37 @@ int main()
   {
     md.setM1Speed(i); 
     
-    delay(2);
+    gpioDelay(20000);
   }
   
   for (int i = 400; i >= -400; i--)
   {
     md.setM1Speed(i);    
-    delay(2);
+   gpioDelay(20000);
   }
   
   for (int i = -400; i <= 0; i++)
   {
     md.setM1Speed(i);
-    delay(2);
+    gpioDelay(20000);
   }
 
   for (int i = 0; i <= 400; i++)
   {
     md.setM2Speed(i);
-    delay(2);
+    gpioDelay(20000);
   }
   
   for (int i = 400; i >= -400; i--)
   {
     md.setM2Speed(i);
-    delay(2);
+    gpioDelay(20000);
   }
   
   for (int i = -400; i <= 0; i++)
   {
     md.setM2Speed(i);
-    delay(2);
+    gpioDelay(20000);
   }
 
 gpioTerminate();
