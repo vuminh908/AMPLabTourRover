@@ -7,6 +7,9 @@
 #include <iostream>
 #include <cmath>
 #include <zbar.h>
+#include <string>
+#include <fstream>
+#include <streambuf>
 
 
 using namespace cv;
@@ -14,6 +17,7 @@ using namespace std;
 
 
 string previous_data;
+
 
 const int CV_QR_NORTH = 0;
 const int CV_QR_EAST = 1;
@@ -349,12 +353,15 @@ int main ( int argc, char **argv )
             string current_data = symbol->get_data();
 
 
-             //do something useful with results
+            //do something useful with results
             cout     << counter << " "
                      << "decoded " << symbol->get_type_name()
                      << " symbol \"" << symbol->get_data() << '"' << endl;
             if (current_data != previous_data)
-                system("~/AMPLabTourRover/QRCode_Reader/speech.sh Hello, My name is Sparky. I will be talking about some of the wonderful projects in the AMP Lab today. The AMP Lab is a co curricular instructional lab here at Virginia Polytechnic and State Insitute.");
+
+
+//("ps -ef|grep " + parameters).c_str()
+            system(("~/AMPLabTourRover/QRCode_Reader/speech.sh `cat "+ current_data + "`").c_str());
             previous_data =  current_data;
         }
 

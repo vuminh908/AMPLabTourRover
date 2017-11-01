@@ -5,26 +5,25 @@
 DualMC33926MotorShield::DualMC33926MotorShield()
 {
   //Pin map
-  _nD2 = 4;
-  _M1DIR = 7;
-  _M2DIR = 8;
-  _nSF = 12;
-  _M1FB = A0; 
-  _M2FB = A1;
+  _M1E = 22;
+  _M1DIR = 24;
+  _M2DIR = 25;
+  _M2E = 23;
+
 }
 
-DualMC33926MotorShield::DualMC33926MotorShield(unsigned char M1DIR, unsigned char M1PWM, unsigned char M1FB,
-                                               unsigned char M2DIR, unsigned char M2PWM, unsigned char M2FB,
-                                               unsigned char nD2, unsigned char nSF)
+DualMC33926MotorShield::DualMC33926MotorShield(unsigned char M1DIR, unsigned char M1PWM, 
+                                               unsigned char M2DIR, unsigned char M2PWM, 
+                                               unsigned char M2E, unsigned char M2E)
 {
   //Pin map
-  //PWM1 and PWM2 cannot be remapped because the library assumes PWM is on timer1
-  _nD2 = nD2;
+  
+
   _M1DIR = M1DIR;
   _M2DIR = M2DIR;
-  _nSF = nSF;
-  _M1FB = M1FB; 
-  _M2FB = M2FB;
+
+  _M1E = M1E; 
+  _M2E = M2E;
 }
 
 // Public Methods //////////////////////////////////////////////////////////////
@@ -32,29 +31,17 @@ void DualMC33926MotorShield::init()
 {
 // Define pinMode for the pins and set the frequency for timer1.
 
-  pinMode(_M1DIR,OUTPUT);
-  pinMode(_M1PWM,OUTPUT);
-  pinMode(_M1FB,INPUT);
-  pinMode(_M2DIR,OUTPUT);
-  pinMode(_M2PWM,OUTPUT);
-  pinMode(_M2FB,INPUT);
-  pinMode(_nD2,OUTPUT);
-  digitalWrite(_nD2,HIGH); // default to on
-  pinMode(_nSF,INPUT);
+  gpioSetMode(_M1DIR,PI_OUTPUT);
+  gpioSetMode(_M1PWM,PI_OUTPUT);
+  gpioSetMode(_M1E,PI_OUTPUT);
+  gpioSetMode(_M2DIR,PI_OUTPUT);
+  gpioSetMode(_M2PWM,PI_OUTPUT);
+  gpioSetMode(_M2E,PI_OUTPUT);
+ gpioSetPWMfrequency(_M1PWM, 20000); // Set GPIO24 to 20000Hz.
+ gpioSetPWMfrequency(_M2PWM, 20000); // Set GPIO24 to 20000Hz.
 
-  #if defined(__AVR_ATmega168__)|| defined(__AVR_ATmega328P__)
-  // Timer 1 configuration
-  // prescaler: clockI/O / 1
-  // outputs enabled
-  // phase-correct PWM
-  // top of 400
-  //
-  // PWM frequency calculation
-  // 16MHz / 1 (prescaler) / 2 (phase-correct) / 400 (top) = 20kHz
-  TCCR1A = 0b10100000;
-  TCCR1B = 0b00010001;
-  ICR1 = 400;
-  #endif
+
+ 
 }
 // Set speed for motor 1, speed is a number betwenn -400 and 400
 void DualMC33926MotorShield::setM1Speed(int speed)
@@ -68,15 +55,13 @@ void DualMC33926MotorShield::setM1Speed(int speed)
   }
   if (speed > 400)  // Max PWM dutycycle
     speed = 400;
-  #if defined(__AVR_ATmega168__)|| defined(__AVR_ATmega328P__)
-  OCR1A = speed;
-  #else
-  analogWrite(_M1PWM,speed * 51 / 80); // default to using analogWrite, mapping 400 to 255
-  #endif
+  
+  gpioPWM(_M1PWM,speed * 51 / 80); // default to using analogWrite, mapping 400 to 255
+
   if (reverse)
-    digitalWrite(_M1DIR,HIGH);
+    gpioWrite(_M1DIR,1);
   else
-    digitalWrite(_M1DIR,LOW);
+    gpioWrite(_M1DIR,0);
 }
 
 // Set speed for motor 2, speed is a number betwenn -400 and 400
@@ -91,15 +76,13 @@ void DualMC33926MotorShield::setM2Speed(int speed)
   }
   if (speed > 400)  // Max PWM dutycycle
     speed = 400;
-  #if defined(__AVR_ATmega168__)|| defined(__AVR_ATmega328P__)
-  OCR1B = speed;
-  #else
-  analogWrite(_M2PWM,speed * 51 / 80); // default to using analogWrite, mapping 400 to 255
-  #endif
+ 
+  gpioPWM(_M2PWM,speed * 51 / 80); // default to using analogWrite, mapping 400 to 255
+
   if (reverse)
-    digitalWrite(_M2DIR,HIGH);
+    gpioWrite(_M2DIR,1);
   else
-    digitalWrite(_M2DIR,LOW);
+    gpioWrite(_M2DIR,0);
 }
 
 // Set speed for motor 1 and 2
@@ -109,22 +92,4 @@ void DualMC33926MotorShield::setSpeeds(int m1Speed, int m2Speed)
   setM2Speed(m2Speed);
 }
 
-// Return motor 1 current value in milliamps.
-unsigned int DualMC33926MotorShield::getM1CurrentMilliamps()
-{
-  // 5V / 1024 ADC counts / 525 mV per A = 9 mA per count
-  return analogRead(_M1FB) * 9;
-}
 
-// Return motor 2 current value in milliamps.
-unsigned int DualMC33926MotorShield::getM2CurrentMilliamps()
-{
-  // 5V / 1024 ADC counts / 525 mV per A = 9 mA per count
-  return analogRead(_M2FB) * 9;
-}
-
-// Return error status
-unsigned char DualMC33926MotorShield::getFault()
-{
-  return !digitalRead(_nSF);
-}
