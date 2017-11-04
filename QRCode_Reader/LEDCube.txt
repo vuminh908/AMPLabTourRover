@@ -1,0 +1,1 @@
+The most colorful project in the AMP Lab, the LED Cube was created by Kevin. The LED Cube is 516 individually addressable RGB LEDs, able to form patterns and visualize music. The cube is controlled by the same microcontroller used in Microcontroller interfacing. 

@@ -8,3 +8,20 @@
 	<fstream>
 	<streambuf>
 
+1509817640 source:/home/pi/AMPLabTourRover/QRCode_Reader/QRCoder_Reader/main.cpp
+	<opencv2/opencv.hpp>
+	<iostream>
+	<cmath>
+	<zbar.h>
+	<string>
+	<fstream>
+	<streambuf>
+	<raspicam/raspicam_cv.h>
+	"/home/pi/AMPLabTourRover/LineFollow/lib/DualMC33926MotorHat.h"
+
+1509551877 source:/home/pi/AMPLabTourRover/LineFollow/lib/DualMC33926MotorHat.cpp
+	"DualMC33926MotorHat.h"
+
+1509551019 /home/pi/AMPLabTourRover/LineFollow/lib/DualMC33926MotorHat.h
+	<pigpio.h>
+

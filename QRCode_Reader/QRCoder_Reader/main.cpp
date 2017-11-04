@@ -10,11 +10,13 @@
 #include <string>
 #include <fstream>
 #include <streambuf>
-
+#include <raspicam/raspicam_cv.h>
+#include "/home/pi/AMPLabTourRover/LineFollow/lib/DualMC33926MotorHat.h"
 
 using namespace cv;
 using namespace std;
 
+DualMC33926MotorHat md;
 
 string previous_data;
 
@@ -28,7 +30,7 @@ float cv_distance(Point2f P, Point2f Q);					// Get Distance between two points
 float cv_lineEquation(Point2f L, Point2f M, Point2f J);		// Perpendicular Distance of a Point J from line formed by Points L and M; Solution to equation of the line Val = ax+by+c
 float cv_lineSlope(Point2f L, Point2f M, int& alignement);	// Slope of a line by two Points L and M on it; Slope of line, S = (x1 -x2) / (y1- y2)
 void cv_getVertices(vector<vector<Point> > contours, int c_id,float slope, vector<Point2f>& X);
-void cv_updateCorner(Point2f P, Point2f ref ,float& baseline,  Point2f& corner);
+void cv_updateCorner(Point2f P, Point2f ref,float& baseline,  Point2f& corner);
 void cv_updateCornerOr(int orientation, vector<Point2f> IN, vector<Point2f> &OUT);
 bool getIntersectionPoint(Point2f a1, Point2f a2, Point2f b1, Point2f b2, Point2f& intersection);
 float cross(Point2f v1,Point2f v2);
@@ -38,12 +40,28 @@ float cross(Point2f v1,Point2f v2);
 int main ( int argc, char **argv )
 {
 
-    VideoCapture cap(0); // open the default camera
-    if(!cap.isOpened())  // check if we succeeded
+    raspicam::RaspiCam_Cv Camera;
+    cv::Mat image;
+
+    Camera.set( CV_CAP_PROP_FORMAT, CV_8UC3 );
+    //Open camera
+    cout<<"Opening Camera..."<<endl;
+    if (!Camera.open())
+    {
+        cerr<<"Error opening the camera"<<endl;
         return -1;
+    }
+    //Start capture
+    cout<<"Capturing "<<endl;
 
+    Camera.grab();
+    Camera.retrieve ( image);
 
-    Mat image;
+    if (gpioInitialise() < 0)
+    {
+        return -1;
+    }
+
 
     zbar::ImageScanner scanner;
 
@@ -51,7 +69,7 @@ int main ( int argc, char **argv )
     scanner.set_config( zbar::ZBAR_NONE,  zbar::ZBAR_CFG_ENABLE, 1);
 
 
-    cap >> image;
+
     // Creation of Intermediate 'Image' Objects required later
     Mat gray(image.size(), CV_MAKETYPE(image.depth(), 1));			// To hold Grayscale Image
     Mat edges(image.size(), CV_MAKETYPE(image.depth(), 1));			// To hold Grayscale Image
@@ -66,14 +84,20 @@ int main ( int argc, char **argv )
 
     int align,orientation;
 
-    int DBG=1;						// Debug Flag
+    int DBG=0;						// Debug Flag
 
     int key = 0;
     while(1)				// While loop to query for Image Input frame
     {
 
+        md.setM1Speed(150);
+        md.setM2Speed(-150);
 
-        cap >> image;
+
+
+
+        Camera.grab();
+        Camera.retrieve ( image);
 
         if(image.empty())
         {
@@ -90,7 +114,7 @@ int main ( int argc, char **argv )
         // capture >> image;				// For Video input		// Capture Image from Image Input
 
         cvtColor(image,gray,CV_RGB2GRAY);		// Convert Image captured from Image Input to GrayScale
-        Canny(gray, edges, 100 , 200, 3);		// Apply Canny edge detection on the gray image
+        Canny(gray, edges, 100, 200, 3);		// Apply Canny edge detection on the gray image
 
 
         findContours( edges, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE); // Find contours with hierarchy
@@ -104,7 +128,7 @@ int main ( int argc, char **argv )
         for( int i = 0; i < contours.size(); i++ )
         {
             mu[i] = moments( contours[i], false );
-            mc[i] = Point2f( mu[i].m10/mu[i].m00 , mu[i].m01/mu[i].m00 );
+            mc[i] = Point2f( mu[i].m10/mu[i].m00, mu[i].m01/mu[i].m00 );
         }
 
 
@@ -257,9 +281,9 @@ int main ( int argc, char **argv )
                 }
 
                 //Draw contours on the image
-                drawContours( image, contours, top , Scalar(255,200,0), 2, 8, hierarchy, 0 );
-                drawContours( image, contours, right , Scalar(0,0,255), 2, 8, hierarchy, 0 );
-                drawContours( image, contours, bottom , Scalar(255,0,100), 2, 8, hierarchy, 0 );
+                drawContours( image, contours, top, Scalar(255,200,0), 2, 8, hierarchy, 0 );
+                drawContours( image, contours, right, Scalar(0,0,255), 2, 8, hierarchy, 0 );
+                drawContours( image, contours, bottom, Scalar(255,0,100), 2, 8, hierarchy, 0 );
 
                 // Insert Debug instructions here
                 if(DBG==1)
@@ -267,14 +291,14 @@ int main ( int argc, char **argv )
                     // Debug Prints
                     // Visualizations for ease of understanding
                     if (slope > 5)
-                        circle( traces, Point(10,20) , 5 ,  Scalar(0,0,255), -1, 8, 0 );
+                        circle( traces, Point(10,20), 5,  Scalar(0,0,255), -1, 8, 0 );
                     else if (slope < -5)
-                        circle( traces, Point(10,20) , 5 ,  Scalar(255,255,255), -1, 8, 0 );
+                        circle( traces, Point(10,20), 5,  Scalar(255,255,255), -1, 8, 0 );
 
                     // Draw contours on Trace image for analysis
-                    drawContours( traces, contours, top , Scalar(255,0,100), 1, 8, hierarchy, 0 );
-                    drawContours( traces, contours, right , Scalar(255,0,100), 1, 8, hierarchy, 0 );
-                    drawContours( traces, contours, bottom , Scalar(255,0,100), 1, 8, hierarchy, 0 );
+                    drawContours( traces, contours, top, Scalar(255,0,100), 1, 8, hierarchy, 0 );
+                    drawContours( traces, contours, right, Scalar(255,0,100), 1, 8, hierarchy, 0 );
+                    drawContours( traces, contours, bottom, Scalar(255,0,100), 1, 8, hierarchy, 0 );
 
                     // Draw points (4 corners) on Trace image for each Identification marker
                     circle( traces, L[0], 2,  Scalar(255,255,0), -1, 8, 0 );
@@ -326,9 +350,9 @@ int main ( int argc, char **argv )
             }
         }
 
-        imshow ( "Image", image );
-        imshow ( "Traces", traces );
-        imshow ( "QR code", qr_thres );
+       // imshow ( "Image", image );
+       // imshow ( "Traces", traces );
+       // imshow ( "QR code", qr_thres );
 
         // Obtain image data
         int width = qr_thres.cols;
@@ -358,10 +382,17 @@ int main ( int argc, char **argv )
                      << "decoded " << symbol->get_type_name()
                      << " symbol \"" << symbol->get_data() << '"' << endl;
             if (current_data != previous_data)
+            {
+
+                md.setM1Speed(0);
+                md.setM2Speed(0);
+                gpioDelay(1000000);
+
 
 
 //("ps -ef|grep " + parameters).c_str()
-            system(("~/AMPLabTourRover/QRCode_Reader/speech.sh `cat "+ current_data + "`").c_str());
+                system(("/home/pi/AMPLabTourRover/QRCode_Reader/speech.sh `cat "+ current_data + "`").c_str());
+            }
             previous_data =  current_data;
         }
 
@@ -369,7 +400,7 @@ int main ( int argc, char **argv )
         key = waitKey(2);	// OPENCV: wait for 1ms before accessing next frame
 
     }	// End of 'while' loop
-
+gpioTerminate();
     return 0;
 }
 
@@ -537,7 +568,7 @@ void cv_getVertices(vector<vector<Point> > contours, int c_id, float slope, vect
 
 // Function: Compare a point if it more far than previously recorded farthest distance
 // Description: Farthest Point detection using reference point and baseline distance
-void cv_updateCorner(Point2f P, Point2f ref , float& baseline,  Point2f& corner)
+void cv_updateCorner(Point2f P, Point2f ref, float& baseline,  Point2f& corner)
 {
     float temp_dist;
     temp_dist = cv_distance(P,ref);

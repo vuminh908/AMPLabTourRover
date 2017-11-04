@@ -1,0 +1,1 @@
+Another project from Theo Long, this Lixie Tube display was created to be a safe alternative to the High Voltage Nixie tubes favored by mad scientists. Running off of 5 volts, these Lixie Tubes are color controlable, and can be any color in the rainbow! The goal to to make a retro clock. 

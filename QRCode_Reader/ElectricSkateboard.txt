@@ -1,0 +1,1 @@
+This project was built by Theo Long. The project is an Motorized Longboard, capable of propelling a human to speeds of up to 20 kilometers an hour and has a range of 7 miles. This project features two brushless DC motors, motor controllers, and a large lithium ion battery.

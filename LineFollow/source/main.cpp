@@ -6,10 +6,7 @@ DualMC33926MotorHat md;
 
 
 int main()
-{if (gpioInitialise() < 0)
 {
-  return -1;
-}
 
 
 
